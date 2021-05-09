@@ -342,6 +342,7 @@ void Fcat::ActuatorProfPosCmdCb(
   cmd.type = fastcat::ACTUATOR_PROF_POS_CMD;
   cmd.actuator_prof_pos_cmd.target_position = msg->target_position;
   cmd.actuator_prof_pos_cmd.profile_velocity = msg->profile_velocity;
+  cmd.actuator_prof_pos_cmd.end_velocity = msg->end_velocity;
   cmd.actuator_prof_pos_cmd.profile_accel= msg->profile_accel;
   cmd.actuator_prof_pos_cmd.relative = msg->relative;
 
