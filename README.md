@@ -63,6 +63,9 @@ ros2 run fcat fcat_srvs
 | ---------------------- | ------------------------------------------------------------ | ------- |
 | fastcat_config_path    | The path  of Fastcat input YAML bus configuration            | ""      |
 | create_joint_state_pub | Enables publishing of `state/joint_states` topic useful for RVIZ2 or Moveit2! | true    |
+| create__individual_fts_publishers | Enables publishing of `state/<device_name>/tared_wrench` topics for each FTS device on the bus | false  |
+
+The `create_individual_fts_publishers` is intended to help FCAT interoperate with other 3rd party software that may subscribe to `geometry_msgs/Wrench` topics. Regardless of this parameter, FCAT will publish a topic called `fcat/state/fts` that contains variable-length arrays of all FTS devices. 
 
 ## Topics
 
@@ -83,6 +86,7 @@ Device publishers are only created if at least one device is found on the user-s
 | fcat_msgs/ConditionalStates     | `/fcat/state/conditionals`      | Variable-sized Array of ConditionalState Telemetry     |
 | fcat_msgs/FaulterStates         | `/fcat/state/faulters`          | Variable-sized Array of FaulterState Telemetry         |
 | fcat_msgs/FilterStates          | `/fcat/state/filters`           | Variable-sized Array of FilterState Telemetry          |
+| fcat_msgs/FtsStates             | `/fcat/state/fts`               | Variable-sized Array of FtsState Telemetry          |
 | fcat_msgs/FunctionStates        | `/fcat/state/functions`         | Variable-sized Array of FunctionState Telemetry        |
 | fcat_msgs/PidStates             | `/fcat/state/pids`              | Variable-sized Array of PidState Telemetry             |
 | fcat_msgs/SaturationStates      | `/fcat/state/saturations`       | Variable-sized Array of SaturationState Telemetry      |

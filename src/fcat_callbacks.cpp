@@ -190,27 +190,29 @@ fcat_msgs::msg::FilterState FilterStateToMsg(
   return msg;
 }
 
-/* TODO
-auto msg = geometry_msgs::msg::Wrench();
 
-msg.force.x  = state->fts_state.raw_fx;
-msg.force.y  = state->fts_state.raw_fy;
-msg.force.z  = state->fts_state.raw_fz;
-msg.torque.x = state->fts_state.raw_tx;
-msg.torque.y = state->fts_state.raw_ty;
-msg.torque.z = state->fts_state.raw_tz;
+fcat_msgs::msg::FtsState FtsStateToMsg(
+    std::shared_ptr<const fastcat::DeviceState> state)
+{
+  auto msg = fcat_msgs::msg::FtsState();
 
-fts_raw_pub_[state->name]->publish(msg);
+  msg.raw.force.x  = state->fts_state.raw_fx;
+  msg.raw.force.y  = state->fts_state.raw_fy;
+  msg.raw.force.z  = state->fts_state.raw_fz;
+  msg.raw.torque.x = state->fts_state.raw_tx;
+  msg.raw.torque.y = state->fts_state.raw_ty;
+  msg.raw.torque.z = state->fts_state.raw_tz;
+  
+  msg.tared.force.x  = state->fts_state.tared_fx;
+  msg.tared.force.y  = state->fts_state.tared_fy;
+  msg.tared.force.z  = state->fts_state.tared_fz;
+  msg.tared.torque.x = state->fts_state.tared_tx;
+  msg.tared.torque.y = state->fts_state.tared_ty;
+  msg.tared.torque.z = state->fts_state.tared_tz;
 
-msg.force.x  = state->fts_state.tared_fx;
-msg.force.y  = state->fts_state.tared_fy;
-msg.force.z  = state->fts_state.tared_fz;
-msg.torque.x = state->fts_state.tared_tx;
-msg.torque.y = state->fts_state.tared_ty;
-msg.torque.z = state->fts_state.tared_tz;
+  return msg;
 
-fts_tared_pub_[state->name]->publish(msg);
-*/
+}
 
 fcat_msgs::msg::FunctionState FunctionStateToMsg(
     std::shared_ptr<const fastcat::DeviceState> state)

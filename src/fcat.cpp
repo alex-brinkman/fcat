@@ -29,6 +29,9 @@ Fcat::Fcat() : FcatNode("fcat", "fcat") {
   this->declare_parameter<bool>("create_joint_state_pub", true);
   this->get_parameter("create_joint_state_pub", enable_js_pub_);
 
+  this->declare_parameter<bool>("create_individual_fts_publishers", false);
+  this->get_parameter("create_individual_fts_publishers", enable_individual_fts_pubs_);
+
   PopulateDeviceStateFields();
 
   // Must populate certain device state fields before initializing pub/sub
@@ -274,20 +277,34 @@ void Fcat::InitializePublishersAndMessages(){
     signal_generator_states_msg_.states.resize(vec_state_ptrs.size());
   }
 
-  
   // FTS, AtiFts, VirtualFts
   vec_state_ptrs = device_type_vec_map_[fastcat::FTS_STATE];
-  for(auto dev_state_ptr = vec_state_ptrs.begin(); dev_state_ptr != vec_state_ptrs.end(); dev_state_ptr++){
+  if(vec_state_ptrs.size() > 0){
 
-     std::string device = (*dev_state_ptr)->name;
-     fts_raw_pub_map_[device] = 
-       this->create_publisher<geometry_msgs::msg::Wrench>(
-         "fts/" + device + "/raw_wrench", FCAT_PUB_QUEUE_SIZE);
+    MSG("Creating Fts pub");
+    fts_pub_ = this->create_publisher<fcat_msgs::msg::FtsStates>(
+        "state/fts", FCAT_PUB_QUEUE_SIZE);
 
-     fts_tared_pub_map_[device] = 
-       this->create_publisher<geometry_msgs::msg::Wrench>(
-         "fts/" + device + "/tared_wrench", FCAT_PUB_QUEUE_SIZE);
-   }
+    fts_states_msg_.names.resize(vec_state_ptrs.size());
+
+    fts_states_msg_.states.resize(vec_state_ptrs.size());
+  }
+
+  // Individual topics for each FTS state 
+  if(enable_individual_fts_pubs_){
+    for(auto dev_state_ptr = vec_state_ptrs.begin(); 
+        dev_state_ptr != vec_state_ptrs.end(); dev_state_ptr++){
+
+       std::string device = (*dev_state_ptr)->name;
+       fts_raw_pub_map_[device] = 
+         this->create_publisher<geometry_msgs::msg::Wrench>(
+           "fts/" + device + "/raw_wrench", FCAT_PUB_QUEUE_SIZE);
+
+       fts_tared_pub_map_[device] = 
+         this->create_publisher<geometry_msgs::msg::Wrench>(
+           "fts/" + device + "/tared_wrench", FCAT_PUB_QUEUE_SIZE);
+    }
+  }
 
   module_state_pub_ = this->create_publisher<fcat_msgs::msg::ModuleState>(
       "state/module_state", FCAT_PUB_QUEUE_SIZE);
@@ -457,37 +474,52 @@ void Fcat::PublishModuleState(){
 
 void Fcat::PublishFtsStates(){
 
-  // FTS, AtiFts, VirtualFts
-  auto vec_state_ptrs = device_type_vec_map_[fastcat::FTS_STATE];
 
-  for(auto dev_state_ptr = vec_state_ptrs.begin(); dev_state_ptr != vec_state_ptrs.end(); dev_state_ptr++){
-  auto wrench_msg = geometry_msgs::msg::Wrench();
+  auto state_vec = device_type_vec_map_[fastcat::FTS_STATE];
+  if(state_vec.size() > 0){
+    size_t index = 0;
 
-    std::string device = (*dev_state_ptr)->name;
-    fastcat::FtsState fts_state = (*dev_state_ptr)->fts_state;
+    for(auto state_ptr = state_vec.begin(); 
+        state_ptr != state_vec.end(); state_ptr++){
+      fts_states_msg_.names[index] = (*state_ptr)->name;
+      fts_states_msg_.states[index] = FtsStateToMsg(*state_ptr);
+      index++;
+    }
+    fts_pub_->publish(fts_states_msg_);
 
-    wrench_msg.force.x = fts_state.raw_fx;
-    wrench_msg.force.y = fts_state.raw_fy;
-    wrench_msg.force.z = fts_state.raw_fz;
+    // For individual Wrench topics
+    if(enable_individual_fts_pubs_){
+      for(auto state_ptr = state_vec.begin(); 
+        state_ptr != state_vec.end(); state_ptr++){
 
-    wrench_msg.torque.x = fts_state.raw_tx;
-    wrench_msg.torque.y = fts_state.raw_ty;
-    wrench_msg.torque.z = fts_state.raw_tz;
+        auto wrench_msg = geometry_msgs::msg::Wrench();
 
-    fts_raw_pub_map_[device]->publish(wrench_msg);
+        std::string device = (*state_ptr)->name;
+        fastcat::FtsState fts_state = (*state_ptr)->fts_state;
+
+        wrench_msg.force.x = fts_state.raw_fx;
+        wrench_msg.force.y = fts_state.raw_fy;
+        wrench_msg.force.z = fts_state.raw_fz;
+
+        wrench_msg.torque.x = fts_state.raw_tx;
+        wrench_msg.torque.y = fts_state.raw_ty;
+        wrench_msg.torque.z = fts_state.raw_tz;
+
+        fts_raw_pub_map_[device]->publish(wrench_msg);
 
 
-    wrench_msg.force.x = fts_state.tared_fx;
-    wrench_msg.force.y = fts_state.tared_fy;
-    wrench_msg.force.z = fts_state.tared_fz;
+        wrench_msg.force.x = fts_state.tared_fx;
+        wrench_msg.force.y = fts_state.tared_fy;
+        wrench_msg.force.z = fts_state.tared_fz;
 
-    wrench_msg.torque.x = fts_state.tared_tx;
-    wrench_msg.torque.y = fts_state.tared_ty;
-    wrench_msg.torque.z = fts_state.tared_tz;
+        wrench_msg.torque.x = fts_state.tared_tx;
+        wrench_msg.torque.y = fts_state.tared_ty;
+        wrench_msg.torque.z = fts_state.tared_tz;
 
-    fts_tared_pub_map_[device]->publish(wrench_msg);
-   }
-
+        fts_tared_pub_map_[device]->publish(wrench_msg);
+      }
+    }
+  }
 }
 
 void Fcat::PublishActuatorStates(){

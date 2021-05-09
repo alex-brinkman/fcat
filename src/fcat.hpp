@@ -53,6 +53,7 @@
 #include "fcat_msgs/msg/conditional_states.hpp"
 #include "fcat_msgs/msg/faulter_states.hpp"
 #include "fcat_msgs/msg/filter_states.hpp"
+#include "fcat_msgs/msg/fts_states.hpp"
 #include "fcat_msgs/msg/function_states.hpp"
 #include "fcat_msgs/msg/pid_states.hpp"
 #include "fcat_msgs/msg/saturation_states.hpp"
@@ -99,6 +100,9 @@ fcat_msgs::msg::FaulterState FaulterStateToMsg(
     std::shared_ptr<const fastcat::DeviceState> state);
 
 fcat_msgs::msg::FilterState FilterStateToMsg(
+    std::shared_ptr<const fastcat::DeviceState> state);
+
+fcat_msgs::msg::FtsState FtsStateToMsg(
     std::shared_ptr<const fastcat::DeviceState> state);
 
 fcat_msgs::msg::FunctionState FunctionStateToMsg(
@@ -270,11 +274,12 @@ private:
   rclcpp::Publisher<fcat_msgs::msg::JedStates>::SharedPtr      jed_pub_;
 
   rclcpp::Publisher<fcat_msgs::msg::SaturationStates>::SharedPtr saturation_pub_;
-  rclcpp::Publisher<fcat_msgs::msg::FilterStates>::SharedPtr filter_pub_;
   rclcpp::Publisher<fcat_msgs::msg::PidStates>::SharedPtr pid_pub_;
   rclcpp::Publisher<fcat_msgs::msg::CommanderStates>::SharedPtr commander_pub_;
   rclcpp::Publisher<fcat_msgs::msg::SignalGeneratorStates>::SharedPtr signal_generator_pub_;
   rclcpp::Publisher<fcat_msgs::msg::FaulterStates>::SharedPtr faulter_pub_;
+  rclcpp::Publisher<fcat_msgs::msg::FilterStates>::SharedPtr filter_pub_;
+  rclcpp::Publisher<fcat_msgs::msg::FtsStates>::SharedPtr fts_pub_;
   rclcpp::Publisher<fcat_msgs::msg::FunctionStates>::SharedPtr function_pub_;
   rclcpp::Publisher<fcat_msgs::msg::ConditionalStates>::SharedPtr conditional_pub_;
   rclcpp::Publisher<fcat_msgs::msg::SchmittTriggerStates>::SharedPtr schmitt_trigger_pub_;
@@ -288,6 +293,7 @@ private:
   ////////////////////
 
   bool enable_js_pub_;
+  bool enable_individual_fts_pubs_;
 
   ////////////
   // fields //
@@ -313,6 +319,7 @@ private:
   fcat_msgs::msg::ConditionalStates     conditional_states_msg_;
   fcat_msgs::msg::FaulterStates         faulter_states_msg_;
   fcat_msgs::msg::FilterStates          filter_states_msg_;
+  fcat_msgs::msg::FtsStates             fts_states_msg_;
   fcat_msgs::msg::FunctionStates        function_states_msg_;
   fcat_msgs::msg::PidStates             pid_states_msg_;
   fcat_msgs::msg::SaturationStates      saturation_states_msg_;
